@@ -20,5 +20,5 @@ required = [
 switchy = ["owo"]
 ding = ["completeconfig"]
 balm-fabric = ["cloth-config"]
-emi = ["polymer"]
+emi = ["polymer-all"]
 ```
