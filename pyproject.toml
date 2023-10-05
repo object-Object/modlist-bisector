@@ -1,0 +1,92 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# project metadata
+
+[project]
+name = "modlist-bisector"
+version = "0.1.0"
+description = "Minecraft modlist bisector to help track down bugs."
+authors = [{ name="object-Object" }]
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic~=2.3,!=2.4.0",
+    "typer[all]~=0.9.0",
+    "networkx~=3.1",
+    "tqdm~=4.66",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black==23.7.0",
+    "isort==5.12.0",
+]
+
+[project.scripts]
+bisect-mods = "modlist_bisector.main:app"
+
+[tool.hatch.build.targets.sdist]
+only-include = ["src/modlist_bisector"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/modlist_bisector"]
+
+# formatting and linting
+
+[tool.isort]
+profile = "black"
+combine_as_imports = true
+
+[tool.pyright]
+pythonVersion = "3.11"
+pythonPlatform = "All"
+
+enableExperimentalFeatures = true
+
+typeCheckingMode = "basic"
+
+strictDictionaryInference = true
+strictListInference = true
+strictSetInference = true
+
+reportAssertAlwaysTrue = "error"
+reportConstantRedefinition = "error"
+reportDeprecated = "error"
+reportDuplicateImport = "error"
+reportFunctionMemberAccess = "error"
+reportIncompatibleMethodOverride = "error"
+reportIncompleteStub = "error"
+reportInconsistentConstructor = "error"
+reportInvalidStringEscapeSequence = "error"
+reportInvalidStubStatement = "error"
+reportInvalidTypeVarUse = "error"
+reportMatchNotExhaustive = "error"
+reportMissingParameterType = "error"
+reportMissingTypeStubs = "error"
+reportOverlappingOverload = "error"
+reportSelfClsParameterName = "error"
+reportTypeCommentUsage = "error"
+reportUnknownParameterType = "error"
+reportUnnecessaryCast = "error"
+reportUnnecessaryContains = "error"
+reportUnsupportedDunderAll = "error"
+reportUntypedBaseClass = "error"
+reportUntypedClassDecorator = "error"
+reportUntypedFunctionDecorator = "error"
+reportUntypedNamedTuple = "error"
+reportWildcardImportFromLibrary = "error"
+
+reportMissingTypeArgument = "warning"
+reportPrivateUsage = "warning"
+reportUnnecessaryComparison = "warning"
+reportUnnecessaryIsInstance =  	"warning"
+reportUnusedClass = "warning"
+reportUnusedExpression = "warning"
+reportUnusedFunction = "warning"
+reportUnusedImport = "warning"
+reportUnusedVariable = "warning"
+
+reportIncompatibleVariableOverride = "none"
