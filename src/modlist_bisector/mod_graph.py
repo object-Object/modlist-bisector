@@ -1,4 +1,3 @@
-import itertools
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -7,19 +6,23 @@ from typing import Mapping, Self, TypeVar, overload
 import networkx as nx
 
 from .config import Config
+from .mod_log import glob_logs, load_log, next_log, save_log
 from .modloaders import DISABLED_SUFFIX, ModData, load_mods
 from .paths import rename_path
 
 GRAPH_PATH = Path("graph.json")
-LOG_PATH = Path("log.json")
+
 
 _T = TypeVar("_T")
 
 
 class ModNode(ModData):
     path: str
-    is_good: bool | None
+    """Path relative to the root"""
     enabled: bool
+    """If the mod should be enabled or not"""
+    locked: bool
+    """If true, ensure the mod's state is the same as `self.enabled`"""
 
 
 @dataclass(kw_only=True)
@@ -29,79 +32,95 @@ class ModGraph:
     """Graph of dependencies.
     
     For an edge `A -> B`, `A` needs `B`, so `A` must be disabled before `B`."""
-    log: list[list[str]]
 
     @classmethod
-    def load_mods(cls, config: Config | Path) -> Self:
+    def build(cls, config: Config | Path, *, reset: bool) -> Self:
+        next_log(glob_logs()).touch()
+
         if isinstance(config, Path):
             config = Config.load(config)
 
         G = nx.DiGraph()
 
         for path, mod in load_mods(config.root):
-            if path.suffix == DISABLED_SUFFIX:
-                enabled = False
+            enabled = path.suffix != DISABLED_SUFFIX
+            if not enabled:
                 path = path.with_suffix("")
-            else:
-                enabled = True
 
             node = ModNode(
                 path=path.as_posix(),
                 enabled=enabled,
-                is_good=None,
+                locked=False,
                 **mod.data(),
             )
 
             G.add_node(mod.id, **node)
 
-            for dependency in itertools.chain(
-                mod.depends_ids(),
-                config.extra_deps.get(mod.id, []),
-            ):
+            for dependency in mod.depends_ids():
                 G.add_edge(mod.id, dependency)
 
-        for modid, node in list(G.nodes.items()):
-            if not node:
-                G.remove_node(modid)
-
-        mod_graph = cls(
-            config=config,
-            G=G,
-            log=[],
-        )
-
-        for modid in config.required:
-            mod_graph.enable(modid)
-            mod_graph.set_good(modid, True)
-
-        return mod_graph
+        mod_graph = cls(config=config, G=G).sync()
+        return mod_graph.reset() if reset else mod_graph
 
     @classmethod
-    def load_file(cls, config: Config | Path) -> Self:
+    def load(cls, config: Config | Path) -> Self:
         if isinstance(config, Path):
             config = Config.load(config)
 
         with GRAPH_PATH.open() as f:
             G = nx.adjacency_graph(json.load(f))
 
-        with LOG_PATH.open() as f:
-            log = json.load(f)
+        return cls(config=config, G=G).sync()
 
-        return cls(
-            config=config,
-            G=G,
-            log=log,
-        )
+    def sync(self):
+        # sync locks with config
+        for modid, enabled in self.config.overrides.items():
+            node = self.node(modid)
+            node |= {"locked": True, "enabled": enabled}
 
-    def dump_file(self):
-        self.log.append(
-            sorted(modid for modid, node in self.nodes.items() if node["enabled"])
-        )
+        # sync deps with config
+        for modid, dependencies in self.config.extra_deps.items():
+            for dependency in dependencies:
+                self.G.add_edge(modid, dependency)
 
+        # remove nodes without dependency data
+        for modid, node in list(self.nodes.items()):
+            if not node:
+                self.G.remove_node(modid)
+
+        self.assert_acyclic_pending()
+
+        # sync folder with graph and ensure deps
+        for modid in nx.topological_sort(self.G):
+            node = self.node(modid)
+            for ancestor in nx.ancestors(self.G, modid):
+                if self.node(ancestor)["enabled"]:
+                    node["enabled"] = True
+                    break
+            # enable the mod if an ancestor is enabled OR if it was already enabled
+            # otherwise disable it
+            self.set_enabled(modid, node["enabled"], force=True)
+
+        return self  # for chaining
+
+    def save(self):
         with GRAPH_PATH.open("w") as f:
             json.dump(nx.adjacency_data(self.G), f)
-        with LOG_PATH.open("w") as f:
-            json.dump(self.log, f)
+
+        log = load_log()
+        log.append(self.dump_enabled())
+        save_log(log)
+
+        return self
+
+    def reset(self):
+        for modid in self.nodes:
+            self.enable(modid)
+        self.sync()
+        return self
+
+    def dump_enabled(self):
+        return sorted(modid for modid, node in self.nodes.items() if node["enabled"])
 
     def assert_acyclic_pending(self):
         try:
@@ -125,31 +144,34 @@ class ModGraph:
 
     def node(self, modid: str, default: _T = ...) -> ModNode | _T:
         if default is ...:
-            return self.G.nodes[modid]
-        return self.G.nodes.get(modid, default)
+            return self.nodes[modid]
+        return self.nodes.get(modid, default)
 
     def bisect(self):
+        enabled, _, total = self.count_nodes()
+        to_disable = enabled // 2
         newly_disabled = 0
-        enabled, disabled, total = self.count_nodes()
 
-        for modid in itertools.islice(
-            nx.topological_sort(self.pending_view()),
-            enabled // 2,
-        ):
-            if self.node(modid)["is_good"] is not None:
+        for modid in nx.topological_sort(self.G):
+            if self.node(modid)["locked"]:
                 continue
 
             enabled -= 1
-            disabled += 1
-            if self.disable(modid):
-                newly_disabled += 1
+            if not self.disable(modid):
+                continue
+
+            newly_disabled += 1
+            if newly_disabled >= to_disable:
+                break
 
         print(f"Disabled {newly_disabled} mods ({enabled}/{total} remaining).")
+        return self
 
     def set_disabled_good(self):
         for modid, node in self.pending_nodes().items():
             if not node["enabled"]:
                 self.set_good(modid, True)
+        return self
 
     def set_enabled_good(self):
         """
@@ -176,6 +198,8 @@ class ModGraph:
             self.disable(modid)
             self.set_good(modid, True)
 
+        return self
+
     def enable(self, modid: str):
         return self.set_enabled(modid, True)
 
@@ -186,9 +210,9 @@ class ModGraph:
         node = self.node(modid)
         return self.set_enabled(modid, not node["enabled"])
 
-    def set_enabled(self, modid: str, enabled: bool):
+    def set_enabled(self, modid: str, enabled: bool, *, force: bool = False):
         node = self.node(modid)
-        if enabled is node["enabled"]:
+        if not force and enabled is node["enabled"]:
             return False
 
         # update the node
@@ -215,7 +239,7 @@ class ModGraph:
 
         for node in self.nodes.values():
             total += 1
-            if node["is_good"] is not None:
+            if node["locked"]:
                 continue
 
             if node["enabled"]:
@@ -231,5 +255,5 @@ class ModGraph:
     def pending_view(self):
         return nx.subgraph_view(
             self.G,
-            filter_node=lambda modid: self.node(modid)["is_good"] is None,
+            filter_node=lambda modid: not self.node(modid)["locked"],
         )

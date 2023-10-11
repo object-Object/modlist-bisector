@@ -10,7 +10,7 @@ AbsolutePath = Annotated[Path, AfterValidator(Path.resolve)]
 
 class Config(BaseModel):
     root: AbsolutePath
-    required: set[str]
+    overrides: dict[str, bool]
     extra_deps: dict[str, list[str]]
 
     @classmethod

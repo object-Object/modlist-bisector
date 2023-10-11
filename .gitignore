@@ -1,6 +1,6 @@
 config.toml
 graph.json
-log.json
+log_*.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
