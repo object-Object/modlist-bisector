@@ -170,7 +170,7 @@ class ModGraph:
     def set_disabled_good(self):
         for modid, node in self.pending_nodes().items():
             if not node["enabled"]:
-                self.set_good(modid, True)
+                self.lock(modid)
         return self
 
     def set_enabled_good(self):
@@ -196,7 +196,7 @@ class ModGraph:
 
         for modid in to_disable:
             self.disable(modid)
-            self.set_good(modid, True)
+            self.lock(modid)
 
         return self
 
@@ -216,7 +216,7 @@ class ModGraph:
             return False
 
         # update the node
-        self.G.add_node(modid, enabled=enabled)
+        self.node(modid)["enabled"] = enabled
 
         enabled_path, disabled_path = self.node_paths(node)
         if enabled:
@@ -224,8 +224,8 @@ class ModGraph:
         else:
             return rename_path(enabled_path, disabled_path)
 
-    def set_good(self, modid: str, is_good: bool | None):
-        self.G.add_node(modid, is_good=is_good)
+    def lock(self, modid: str):
+        self.node(modid)["locked"] = True
 
     def node_paths(self, node: ModNode) -> tuple[Path, Path]:
         """node -> (enabled, disabled)"""

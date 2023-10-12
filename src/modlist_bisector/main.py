@@ -42,7 +42,11 @@ def status(*, list_remaining: bool = False, config_path: Path = DEFAULT_CONFIG_P
 
 @app.command()
 def good(*, config_path: Path = DEFAULT_CONFIG_PATH):
-    ModGraph.load(config_path).set_enabled_good().bisect().save()
+    print(
+        "Swapping enabled and disabled mods. If the next step is also good, "
+        "there's a conflict somewhere between the last two modlists."
+    )
+    ModGraph.load(config_path).set_enabled_good().save()
 
 
 @app.command()
