@@ -7,19 +7,21 @@ from typing import Iterator, NotRequired, TypedDict
 from zipfile import ZipFile
 
 import networkx as nx
-from pydantic import BaseModel, Field, model_validator
+from pydantic import Field, model_validator
+
+from .model import DefaultModel
 
 FABRIC_FILE = "fabric.mod.json"
 QUILT_FILE = "quilt.mod.json"
 
 
-class Config(BaseModel):
+class Config(DefaultModel):
     root: Path
     required: set[str]
     extra_deps: dict[str, list[str]]
 
 
-class Manifest(BaseModel):
+class Manifest(DefaultModel):
     root: Path
     mods: dict[str, Mod] = Field(default_factory=dict)
     started: bool = False
@@ -156,7 +158,7 @@ class Manifest(BaseModel):
                 yield mod
 
 
-class Mod(BaseModel):
+class Mod(DefaultModel):
     name: str
     path: Path
     id: str
@@ -171,7 +173,7 @@ class Mod(BaseModel):
         elif QUILT_FILE in filenames:
             return parse_quilt_mod(jar, path)
         else:
-            raise RuntimeError(f"Unsupported mod type")
+            raise RuntimeError("Unsupported mod type")
 
     def enable(self, root: Path):
         self.disabled = False

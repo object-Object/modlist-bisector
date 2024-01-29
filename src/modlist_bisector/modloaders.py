@@ -5,10 +5,12 @@ from pathlib import Path
 from typing import ClassVar, Iterable, Self, TypedDict
 from zipfile import ZipFile
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 from pydantic.config import ConfigDict
 from tqdm import tqdm
 from typing_extensions import Unpack
+
+from .model import DefaultModel
 
 DISABLED_SUFFIX = ".disabled"
 
@@ -52,7 +54,7 @@ class ModData(TypedDict):
     name: str
 
 
-class BaseMod(BaseModel, ABC):
+class BaseMod(DefaultModel, ABC):
     FILENAME: ClassVar[str]
 
     def __init_subclass__(cls, filename: str, **kwargs: Unpack[ConfigDict]):
@@ -92,16 +94,16 @@ class FabricMod(BaseMod, filename="fabric.mod.json"):
 class QuiltMod(BaseMod, filename="quilt.mod.json"):
     quilt_loader: QuiltLoader
 
-    class QuiltLoader(BaseModel):
+    class QuiltLoader(DefaultModel):
         id: str
         name: str | None = None
         metadata: Metadata | None = None
         depends: list[str | Depends]
 
-        class Metadata(BaseModel):
+        class Metadata(DefaultModel):
             name: str
 
-        class Depends(BaseModel):
+        class Depends(DefaultModel):
             id: str
 
         def get_name(self):
