@@ -1,22 +1,18 @@
 {
     "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
-            "source.organizeImports": true,
+            "source.organizeImports.ruff": "explicit"
         },
         "editor.rulers": [88],
     },
-    "isort.importStrategy": "fromEnvironment",
+    "ruff.organizeImports": true,
+    "ruff.lint.args": [
+        "--extend-ignore=I", // format on save is enabled, so don't show the squiggles
+    ],
     "python.languageServer": "Pylance",
     "python.analysis.diagnosticMode": "workspace",
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "[html][jinja-html]": {
-        "editor.rulers": [120],
-    },
-    "files.associations": {
-        "*.js.jinja": "javascript",
-        "*.css.jinja": "css",
-    }
 }

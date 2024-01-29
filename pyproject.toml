@@ -2,8 +2,6 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-# project metadata
-
 [project]
 name = "modlist-bisector"
 version = "0.1.0"
@@ -21,8 +19,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "black==23.7.0",
-    "isort==5.12.0",
+    "ruff>=0.1.11",
 ]
 
 [project.scripts]
@@ -34,15 +31,34 @@ only-include = ["src/modlist_bisector"]
 [tool.hatch.build.targets.wheel]
 packages = ["src/modlist_bisector"]
 
-# formatting and linting
+[tool.ruff]
+extend-select = [
+    "I", # import sorting
+]
+extend-ignore = [
+    # covered by Pyright
+    "F821", # undefined variable
+    "F401", # imported but unused
+    "F841", # unused variable
+]
+extend-exclude = [
+    "vendor",
+    "venv",
+    "**/.*",
+    "**/node_modules",
+    "**/__pycache__",
+]
 
-[tool.isort]
-profile = "black"
-combine_as_imports = true
+[tool.ruff.lint.isort]
+combine-as-imports = true
 
 [tool.pyright]
 pythonVersion = "3.11"
 pythonPlatform = "All"
+
+exclude = [
+    "venv",
+]
 
 enableExperimentalFeatures = true
 
