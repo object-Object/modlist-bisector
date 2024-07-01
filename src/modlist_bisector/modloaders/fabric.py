@@ -129,7 +129,7 @@ class Person(_FabricModel):
 
     name: str
     """The real name, or username, of the person."""
-    contact: ContactInformation = Field(default_factory=ContactInformation)
+    contact: ContactInformation | None = None
     """Contact information pertaining to the person."""
 
     @model_validator(mode="before")
@@ -253,7 +253,7 @@ class FabricMod(_FabricModel):
     """Contains the direct authorship information."""
     contributors: list[Person] = Field(default_factory=list)
     """Contains the contributor information."""
-    contact: ContactInformation = Field(default_factory=ContactInformation)
+    contact: ContactInformation | None = None
     """Contains the contact information for the project."""
     license: str | list[str] | None = None
     """Contains the licensing information.
