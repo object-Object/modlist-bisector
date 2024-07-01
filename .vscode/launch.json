@@ -6,9 +6,9 @@
     "configurations": [
         {
             "name": "Python: Start Bisect",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
-            "module": "modlist_bisector.main",
+            "module": "modlist_bisector.app",
             "args": [
                 "start",
             ],

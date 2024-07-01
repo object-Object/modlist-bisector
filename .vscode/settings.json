@@ -9,10 +9,13 @@
     },
     "ruff.organizeImports": true,
     "ruff.lint.args": [
-        "--extend-ignore=I", // format on save is enabled, so don't show the squiggles
+        "--extend-ignore=I",
     ],
     "python.languageServer": "Pylance",
     "python.analysis.diagnosticMode": "workspace",
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
+    "python.analysis.packageIndexDepths": [
+        { "name": "pydantic", "depth": 2 },
+    ],
 }

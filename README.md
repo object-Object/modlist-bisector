@@ -1,24 +1,12 @@
 # modlist-bisector
+
 Minecraft modlist bisector to help track down bugs.
 
-## Example `config.toml`
+## Project structure
 
-```toml
-root = "C:/Users/object/AppData/Roaming/PrismLauncher/instances/HexxyCraft/.minecraft/mods"
+This project is managed by [Rye](https://rye.astral.sh). To get started, [install Rye](https://rye.astral.sh/guide/installation), then run the following commands:
 
-required = [
-    "quilted_fabric_api",
-    "cardinal-components",
-    "create",
-
-    # import cycles :(
-    "sodium",
-    "indium",
-]
-
-[extra_deps]
-switchy = ["owo"]
-ding = ["completeconfig"]
-balm-fabric = ["cloth-config"]
-emi = ["polymer-all"]
+```sh
+rye sync
+rye run pre-commit install
 ```

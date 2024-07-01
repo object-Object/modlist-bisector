@@ -5,35 +5,51 @@ build-backend = "hatchling.build"
 [project]
 name = "modlist-bisector"
 version = "0.1.0"
-description = "Minecraft modlist bisector to help track down bugs."
-authors = [{ name="object-Object" }]
+description = "Minecraft modlist binary search tool for finding bugs."
+authors = [
+    { name="object-Object" },
+]
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
-    "pydantic~=2.3,!=2.4.0",
-    "typer[all]~=0.9.0",
-    "networkx~=3.1",
-    "tqdm~=4.66",
+    "pydantic>=2.8.0",
+    "typer>=0.12.3",
+    "networkx>=3.3",
 ]
 
-[project.optional-dependencies]
-dev = [
-    "ruff>=0.1.11",
+# Rye
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "ruff>=0.5.0",
+    "pre-commit",
 ]
 
-[project.scripts]
-bisect-mods = "modlist_bisector.main:app"
-
-[tool.hatch.build.targets.sdist]
-only-include = ["src/modlist_bisector"]
+# build config
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/modlist_bisector"]
+packages = [
+    "src/modlist_bisector",
+]
+
+# linting/formatting
 
 [tool.ruff]
+preview = true
+extend-exclude = [
+    "**/venv",
+    "**/.*",
+    "**/node_modules",
+    "**/__pycache__",
+]
+
+[tool.ruff.lint]
+preview = true
 extend-select = [
     "I", # import sorting
+    "RUF022", # __all__ sorting
 ]
 extend-ignore = [
     # covered by Pyright
@@ -41,29 +57,29 @@ extend-ignore = [
     "F401", # imported but unused
     "F841", # unused variable
 ]
-extend-exclude = [
-    "vendor",
-    "venv",
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+
+# type checking
+
+[tool.pyright]
+pythonVersion = "3.12"
+pythonPlatform = "All"
+
+include = [
+    "src",
+]
+exclude = [
+    "**/venv",
     "**/.*",
     "**/node_modules",
     "**/__pycache__",
 ]
 
-[tool.ruff.lint.isort]
-combine-as-imports = true
-
-[tool.pyright]
-pythonVersion = "3.11"
-pythonPlatform = "All"
-
-exclude = [
-    "venv",
-]
-
-enableExperimentalFeatures = true
-
 typeCheckingMode = "basic"
 
+enableExperimentalFeatures = true
 strictDictionaryInference = true
 strictListInference = true
 strictSetInference = true
@@ -71,9 +87,9 @@ strictSetInference = true
 reportAssertAlwaysTrue = "error"
 reportConstantRedefinition = "error"
 reportDeprecated = "error"
-reportDuplicateImport = "error"
 reportFunctionMemberAccess = "error"
 reportIncompatibleMethodOverride = "error"
+reportIncompatibleVariableOverride = "error"
 reportIncompleteStub = "error"
 reportInconsistentConstructor = "error"
 reportInvalidStringEscapeSequence = "error"
@@ -81,7 +97,6 @@ reportInvalidStubStatement = "error"
 reportInvalidTypeVarUse = "error"
 reportMatchNotExhaustive = "error"
 reportMissingParameterType = "error"
-reportMissingTypeStubs = "error"
 reportOverlappingOverload = "error"
 reportSelfClsParameterName = "error"
 reportTypeCommentUsage = "error"
@@ -97,12 +112,17 @@ reportWildcardImportFromLibrary = "error"
 
 reportMissingTypeArgument = "warning"
 reportPrivateUsage = "warning"
+reportUnknownArgumentType = "warning"
+reportUnknownLambdaType = "warning"
+reportUnknownMemberType = "warning"
+reportUnknownVariableType = "warning"
 reportUnnecessaryComparison = "warning"
-reportUnnecessaryIsInstance =  	"warning"
+reportUnnecessaryIsInstance = "warning"
 reportUnusedClass = "warning"
 reportUnusedExpression = "warning"
 reportUnusedFunction = "warning"
 reportUnusedImport = "warning"
 reportUnusedVariable = "warning"
 
-reportIncompatibleVariableOverride = "none"
+reportMissingTypeStubs = "none"
+reportDuplicateImport = "none"
