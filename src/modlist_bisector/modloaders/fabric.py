@@ -303,3 +303,7 @@ class FabricMod(Mod[FabricModFile], modloader="fabric", meta_path="fabric.mod.js
     @override
     def name(self):
         return self.meta.name
+
+    @override
+    def dependencies(self):
+        return self.meta.depends.keys()

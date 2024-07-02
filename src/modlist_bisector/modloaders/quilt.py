@@ -439,3 +439,14 @@ class QuiltMod(Mod[QuiltModFile], modloader="quilt", meta_path="quilt.mod.json")
         if (name := self.meta.quilt_loader.metadata.name) is not None:
             return name
         return self.id
+
+    @override
+    def dependencies(self):
+        for depends in self.meta.quilt_loader.depends:
+            match depends:
+                case []:
+                    pass
+                case [value] | (DependencyObject() as value):
+                    yield value.id
+                case _:
+                    raise ValueError("Quilt list dependencies are not supported")
