@@ -395,7 +395,7 @@ class Minecraft(_QuiltModel):
     environment: Environment = "*"
 
 
-class QuiltMod(_QuiltModel):
+class QuiltModFile(_QuiltModel):
     """A `quilt.mod.json` file.
 
     https://github.com/QuiltMC/rfcs/blob/bd9bb83/specification/0002-quilt.mod.json.md

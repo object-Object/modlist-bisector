@@ -171,7 +171,7 @@ class Mixin(_FabricModel):
         return value
 
 
-class FabricMod(_FabricModel):
+class FabricModFile(_FabricModel):
     """A `fabric.mod.json` file (Version 1).
 
     https://fabricmc.net/wiki/documentation:fabric_mod_json_spec
