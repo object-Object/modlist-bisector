@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, override
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
+
+from .base import Mod
 
 
 class _QuiltModel(BaseModel):
@@ -418,3 +420,22 @@ class QuiltModFile(_QuiltModel):
     """
     minecraft: Minecraft = Field(default_factory=Minecraft)
     """Minecraft related options."""
+
+
+class QuiltMod(Mod[QuiltModFile], modloader="quilt", meta_path="quilt.mod.json"):
+    @classmethod
+    @override
+    def load_meta(cls, data: str):
+        return QuiltModFile.model_validate_json(data)
+
+    @property
+    @override
+    def id(self):
+        return self.meta.quilt_loader.id
+
+    @property
+    @override
+    def name(self):
+        if (name := self.meta.quilt_loader.metadata.name) is not None:
+            return name
+        return self.id

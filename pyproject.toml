@@ -110,6 +110,7 @@ reportUntypedFunctionDecorator = "error"
 reportUntypedNamedTuple = "error"
 reportWildcardImportFromLibrary = "error"
 
+reportImplicitOverride = "warning"
 reportMissingTypeArgument = "warning"
 reportPrivateUsage = "warning"
 reportUnknownArgumentType = "warning"

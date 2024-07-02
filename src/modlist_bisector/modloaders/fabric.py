@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, override
 
 from pydantic import (
     AnyUrl,
@@ -14,6 +14,8 @@ from pydantic import (
 from pydantic.alias_generators import to_camel
 
 from modlist_bisector.utils.types import cast_nullable
+
+from .base import Mod
 
 
 class _FabricModel(BaseModel):
@@ -284,3 +286,20 @@ class FabricModFile(_FabricModel):
         if cast_nullable(self.name) is None:
             self.name = self.id
         return self
+
+
+class FabricMod(Mod[FabricModFile], modloader="fabric", meta_path="fabric.mod.json"):
+    @classmethod
+    @override
+    def load_meta(cls, data: str):
+        return FabricModFile.model_validate_json(data)
+
+    @property
+    @override
+    def id(self):
+        return self.meta.id
+
+    @property
+    @override
+    def name(self):
+        return self.meta.name
