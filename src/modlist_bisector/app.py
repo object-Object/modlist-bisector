@@ -22,21 +22,21 @@ DEFAULT_CONFIG_FILE = "config.toml"
 DEFAULT_STATE_FILE = "state.json"
 
 
-def _parse_config(value: str) -> Config:
+def _parse_config_path(value: str) -> Path:
     path = Path(value)
     if path.is_dir():
         path /= DEFAULT_CONFIG_FILE
-    return Config.load(path)
+    return path
 
 
-ConfigOption = Annotated[
-    Config,
+ConfigPathOption = Annotated[
+    Path,
     Option(
         "--config",
         "-c",
         show_default=DEFAULT_CONFIG_FILE,
         default_factory=lambda: DEFAULT_CONFIG_FILE,
-        parser=_parse_config,
+        parser=_parse_config_path,
     ),
 ]
 
@@ -69,11 +69,12 @@ app = Typer(
 
 @app.command()
 def start(
-    config: ConfigOption,
+    config_path: ConfigPathOption,
     state_path: StatePathOption,
     verbosity: VerbosityOption = 0,
 ):
     setup_logging(verbosity)
+    config = Config.load(config_path)
     state = setup_binary_reduction(config)
     get_and_apply_modlist(state)
     state.dump(state_path)
