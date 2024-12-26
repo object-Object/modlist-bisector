@@ -1,5 +1,6 @@
 config.toml
 graph.json
+state.json
 log_*.json
 .ruff_cache/
 /run/

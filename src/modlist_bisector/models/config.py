@@ -38,6 +38,11 @@ class Config(BaseModel):
     Relative paths are resolved from the location of the config file.
     """
 
+    required_mods: set[str]
+    """A list of modids that must be enabled."""
+    ignored_paths: set[str]
+    """A list of paths that should be completely ignored."""
+
     _mod_types: list[type[AnyMod]] = PrivateAttr(default_factory=list)
 
     @classmethod
