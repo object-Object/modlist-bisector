@@ -15,15 +15,21 @@ click==8.1.7
     # via typer
 colorama==0.4.6
     # via click
+dnspython==2.6.1
+    # via email-validator
+email-validator==2.2.0
+    # via pydantic
+idna==3.7
+    # via email-validator
 markdown-it-py==3.0.0
     # via rich
 mdurl==0.1.2
     # via markdown-it-py
 networkx==3.3
     # via modlist-bisector
-pydantic==2.8.0
+pydantic==2.8.2
     # via modlist-bisector
-pydantic-core==2.20.0
+pydantic-core==2.20.1
     # via pydantic
 pygments==2.18.0
     # via rich

@@ -14,7 +14,7 @@ class _QuiltModel(BaseModel):
     )
 
 
-MAVEN_GROUP_PATTERN = r"(?!loader\.plugin\.)[a-zA-Z0-9-_.]+"
+MAVEN_GROUP_PATTERN = r"[a-zA-Z0-9-_.]+"
 
 MOD_ID_PATTERN = r"[a-z][a-z0-9-_]{1,63}"
 

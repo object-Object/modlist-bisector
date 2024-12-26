@@ -6,6 +6,8 @@ from zipfile import ZipFile
 
 from pydantic import BaseModel
 
+type AnyMod = Mod[Any]
+
 
 @dataclass
 class Mod[T: BaseModel](ABC):
@@ -26,8 +28,21 @@ class Mod[T: BaseModel](ABC):
 
     @classmethod
     def load_zip(cls, path: str | Path) -> Self:
+        mod = cls.try_load_zip(path)
+        if mod is None:
+            raise FileNotFoundError(
+                f"Archive '{path}' does not contain file '{cls.meta_path}'"
+            )
+        return mod
+
+    @classmethod
+    def try_load_zip(cls, path: str | Path) -> Self | None:
         with ZipFile(path) as zf:
-            raw_meta = zf.read(cls.meta_path).decode("utf-8")
+            try:
+                info = zf.getinfo(cls.meta_path)
+            except KeyError:
+                return None
+            raw_meta = zf.read(info).decode("utf-8")
         meta = cls.load_meta(raw_meta)
         return cls(meta=meta)
 

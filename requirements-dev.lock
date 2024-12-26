@@ -19,10 +19,16 @@ colorama==0.4.6
     # via click
 distlib==0.3.8
     # via virtualenv
+dnspython==2.6.1
+    # via email-validator
+email-validator==2.2.0
+    # via pydantic
 filelock==3.15.4
     # via virtualenv
 identify==2.5.36
     # via pre-commit
+idna==3.7
+    # via email-validator
 markdown-it-py==3.0.0
     # via rich
 mdurl==0.1.2
@@ -34,9 +40,9 @@ nodeenv==1.9.1
 platformdirs==4.2.2
     # via virtualenv
 pre-commit==3.7.1
-pydantic==2.8.0
+pydantic==2.8.2
     # via modlist-bisector
-pydantic-core==2.20.0
+pydantic-core==2.20.1
     # via pydantic
 pygments==2.18.0
     # via rich

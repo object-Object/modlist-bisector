@@ -2,7 +2,15 @@ import tomllib
 from pathlib import Path
 from typing import Annotated, Self
 
-from pydantic import AfterValidator, BaseModel, ValidationInfo
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    PrivateAttr,
+    ValidationInfo,
+    model_validator,
+)
+
+from modlist_bisector.modloaders import MODLOADERS, AnyMod
 
 
 def _validate_ConfigRelativePath(value: Path, info: ValidationInfo):
@@ -10,11 +18,11 @@ def _validate_ConfigRelativePath(value: Path, info: ValidationInfo):
         return value
 
     match info.context:
-        case {"config_path": Path() as config_path}:
-            return (config_path / value).resolve()
+        case {"config_dir": Path() as config_dir}:
+            return (config_dir / value).resolve()
         case _:
             raise RuntimeError(
-                "config_path not found in context (try using Config.load() instead)"
+                "config_dir not found in context (try using Config.load() instead)"
             )
 
 
@@ -30,9 +38,24 @@ class Config(BaseModel):
     Relative paths are resolved from the location of the config file.
     """
 
+    _mod_types: list[type[AnyMod]] = PrivateAttr(default_factory=list)
+
     @classmethod
     def load(cls, path: str | Path) -> Self:
-        path = Path(path)
+        path = Path(path).resolve()
         with path.open("rb") as f:
             data = tomllib.load(f)
-        return cls.model_validate(data, context={"config_path": path})
+        return cls.model_validate(data, context={"config_dir": path.parent})
+
+    @property
+    def mod_types(self):
+        return self._mod_types
+
+    @model_validator(mode="after")
+    def _set_mod_types(self):
+        for modloader in self.modloaders:
+            mod_type = MODLOADERS.get(modloader)
+            if mod_type is None:
+                raise ValueError(f"Unknown modloader: {modloader}")
+            self.mod_types.append(mod_type)
+        return self
