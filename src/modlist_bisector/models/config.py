@@ -10,7 +10,7 @@ from pydantic import (
     model_validator,
 )
 
-from modlist_bisector.modloaders import MODLOADERS, AnyMod
+from .modloaders import MODLOADERS, AnyMod
 
 
 def _validate_ConfigRelativePath(value: Path, info: ValidationInfo):

@@ -3,7 +3,7 @@ from typing import Annotated
 
 from typer import Option, Typer
 
-from modlist_bisector.config import Config
+from modlist_bisector.models.config import Config
 from modlist_bisector.utils.paths import multi_rglob
 
 DEFAULT_CONFIG_FILE = "config.toml"
