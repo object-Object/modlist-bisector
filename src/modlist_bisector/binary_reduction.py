@@ -39,7 +39,12 @@ def setup_binary_reduction(config: Config) -> State:
                     )
                     continue
 
-            mod = load_mod(config, mod_path)
+            try:
+                mod = load_mod(config, mod_path)
+            except Exception:
+                logger.error(f"Failed to load mod: {mod_path}")
+                raise
+
             G.add_node(mod.id, path=mod_path, mod=mod)
 
     for modid, data in G.nodes(data=True):

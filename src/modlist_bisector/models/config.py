@@ -5,6 +5,7 @@ from typing import Annotated, Self
 from pydantic import (
     AfterValidator,
     BaseModel,
+    Field,
     PrivateAttr,
     ValidationInfo,
     model_validator,
@@ -38,9 +39,9 @@ class Config(BaseModel):
     Relative paths are resolved from the location of the config file.
     """
 
-    required_mods: set[str]
+    required_mods: set[str] = Field(default_factory=set)
     """A list of modids that must be enabled."""
-    ignored_paths: set[str]
+    ignored_paths: set[str] = Field(default_factory=set)
     """A list of paths that should be completely ignored."""
 
     _mod_types: list[type[AnyMod]] = PrivateAttr(default_factory=list)
