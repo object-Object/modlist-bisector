@@ -1,0 +1,74 @@
+@startuml
+
+skinparam {
+    wrapWidth 400
+}
+
+title Binary Reduction
+
+start
+
+:Load all mods into a dependency graph.;
+
+:Find the closure of each node, ie. the smallest subgraph that contains that node and has no missing dependencies.;
+
+:Remove duplicate closures.;
+
+if (Any required mods?) then (yes)
+    :""S ="" closures of required mods
+    ""D ="" all other closures;
+else (no)
+    :""S ="" empty list
+    ""D ="" all closures;
+endif
+
+:Call ""reset_binary_search()"".;
+
+repeat
+    :Test the current modlist: ""S + D[:m+1]"";
+
+    if (""m < 0"" ?) then (yes)
+        if (Issue occurred?) then (yes)
+            #palegreen:Found minimal modlist.;
+            stop
+        else (no)
+            if (""D"" is empty?) then (yes)
+                #pink:Failed to reproduce issue
+                with full modlist. (???);
+                stop
+            else (no)
+            endif
+        endif
+    else (no)
+        if (Issue occurred?) then (yes)
+            :""R = m"";
+        else (no)
+            :""L = m + 1"";
+        endif
+    endif
+
+    if (""L >= R"" ?) then (yes)
+        :""S.append(D[L])""
+        ""D = D[:L]"";
+
+        :Call ""reset_binary_search()"".;
+    else (no)
+        :""m = (L + R) // 2"";
+    endif
+repeat while ()
+
+kill
+
+partition """reset_binary_search()""" {
+    start
+
+    :Sort D according to ""cost(S + [D[i]])"".;
+
+    :""L = 0""
+    ""R = len(D)""
+    ""m = -1"";
+
+    end
+}
+
+@enduml
