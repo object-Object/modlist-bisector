@@ -44,7 +44,7 @@ ConfigPathOption = Annotated[
 def _parse_state_path(value: str) -> Path:
     path = Path(value)
     if path.is_dir():
-        path /= DEFAULT_CONFIG_FILE
+        path /= DEFAULT_STATE_FILE
     return path
 
 
@@ -53,8 +53,8 @@ StatePathOption = Annotated[
     Option(
         "--state",
         "-s",
-        show_default=DEFAULT_CONFIG_FILE,
-        default_factory=lambda: DEFAULT_CONFIG_FILE,
+        show_default=DEFAULT_STATE_FILE,
+        default_factory=lambda: DEFAULT_STATE_FILE,
         parser=_parse_state_path,
     ),
 ]
