@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Annotated, Any, Literal, override
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .base import Mod
 
@@ -330,7 +330,7 @@ class QuiltLoader(_QuiltModel):
 
     This doesn't affect mods directly placed in the mods folder.
     """
-    repositories: list[HttpUrl] = Field(default_factory=list)
+    repositories: list[str] = Field(default_factory=list)
     """Array of maven repositories."""
     intermediate_mappings: str = Field(
         default="org.quiltmc:hashed",

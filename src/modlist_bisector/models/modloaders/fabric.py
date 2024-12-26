@@ -1,16 +1,7 @@
 from pathlib import Path
-from typing import Annotated, Any, Literal, override
+from typing import Any, Literal, override
 
-from pydantic import (
-    AnyUrl,
-    BaseModel,
-    ConfigDict,
-    EmailStr,
-    Field,
-    HttpUrl,
-    UrlConstraints,
-    model_validator,
-)
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pydantic.alias_generators import to_camel
 
 from modlist_bisector.utils.types import cast_nullable
@@ -53,28 +44,28 @@ class ContactInformation(_FabricModel):
     https://fabricmc.net/wiki/documentation:fabric_mod_json_spec
     """
 
-    email: EmailStr | None = None
+    email: str | None = None
     """Contact e-mail pertaining to the mod.
 
     Must be a valid e-mail address.
     """
-    irc: Annotated[AnyUrl, UrlConstraints(default_port=6667)] | None = None
+    irc: str | None = None
     """IRC channel pertaining to the mod.
 
     Must be of a valid URL format - for example: `irc://irc.esper.net:6667/charset` for
     #charset at EsperNet - the port is optional, and assumed to be 6667 if not present.
     """
-    homepage: HttpUrl | None = None
+    homepage: str | None = None
     """Project or user homepage.
 
     Must be a valid HTTP/HTTPS address.
     """
-    issues: HttpUrl | None = None
+    issues: str | None = None
     """Project issue tracker.
 
     Must be a valid HTTP/HTTPS address.
     """
-    sources: AnyUrl | None = None
+    sources: str | None = None
     """Project source code repository.
 
     Must be a valid URL - it can, however, be a specialized URL for a given VCS (such as

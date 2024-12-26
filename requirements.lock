@@ -16,12 +16,6 @@ click==8.1.7
     # via typer
 colorama==0.4.6
     # via click
-dnspython==2.6.1
-    # via email-validator
-email-validator==2.2.0
-    # via pydantic
-idna==3.7
-    # via email-validator
 markdown-it-py==3.0.0
     # via rich
 mdurl==0.1.2
