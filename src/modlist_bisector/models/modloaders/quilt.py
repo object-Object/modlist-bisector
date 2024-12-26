@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Annotated, Any, Literal, override
+from typing import Annotated, Any, Iterable, Literal, override
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -441,7 +441,7 @@ class QuiltMod(Mod[QuiltModFile], modloader="quilt", meta_path="quilt.mod.json")
         return self.id
 
     @override
-    def dependencies(self):
+    def dependencies(self) -> Iterable[str]:
         for depends in self.meta.quilt_loader.depends:
             match depends:
                 case []:
@@ -450,3 +450,12 @@ class QuiltMod(Mod[QuiltModFile], modloader="quilt", meta_path="quilt.mod.json")
                     yield value.id
                 case _:
                     raise ValueError("Quilt list dependencies are not supported")
+
+    @override
+    def provides(self) -> Iterable[str]:
+        for provides in self.meta.quilt_loader.provides:
+            yield provides.id.split(":")[-1]
+
+    @override
+    def jars(self) -> Iterable[Path]:
+        return self.meta.quilt_loader.jars

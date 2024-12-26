@@ -59,3 +59,11 @@ class Mod[T: BaseModel](ABC):
     @abstractmethod
     def dependencies(self) -> Iterable[str]:
         """Modids required by this mod."""
+
+    @abstractmethod
+    def provides(self) -> Iterable[str]:
+        """Modids provided by this mod."""
+
+    @abstractmethod
+    def jars(self) -> Iterable[Path]:
+        """Nested jars provided by this mod."""

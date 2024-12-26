@@ -17,6 +17,15 @@ from modlist_bisector.utils.mods import load_mod
 logger = logging.getLogger(__name__)
 
 
+IGNORED_DEPENDENCIES = {
+    "java",
+    "minecraft",
+    "fabric",
+    "fabricloader",
+    "quilt_loader",
+}
+
+
 class StepResult(Enum):
     CONTINUE = auto()
     """The binary reduction algorithm has not yet terminated."""
@@ -46,10 +55,14 @@ def setup_binary_reduction(config: Config) -> State:
                 raise
 
             G.add_node(mod.id, path=mod_path, mod=mod)
+            for provides in mod.provides():
+                G.add_node(provides, path=mod_path, mod=mod)
 
     for modid, data in G.nodes(data=True):
         mod: Mod[Any] = data["mod"]
         for dependency in mod.dependencies():
+            if dependency in IGNORED_DEPENDENCIES:
+                continue
             if dependency in G:
                 G.add_edge(modid, dependency)
             else:

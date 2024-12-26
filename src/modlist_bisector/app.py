@@ -8,6 +8,7 @@ from modlist_bisector.binary_reduction import (
     StepResult,
     apply_modlist,
     get_and_apply_modlist,
+    get_modlist,
     setup_binary_reduction,
     step_binary_reduction,
 )
@@ -106,6 +107,7 @@ def reset(
     setup_logging(verbosity)
     state = State.load(state_path)
     apply_modlist(state, enabled=set(state.mod_jars.keys()), disabled=set())
+    state_path.unlink()
 
 
 def step(state_path: Path, is_bad: bool):
@@ -117,6 +119,8 @@ def step(state_path: Path, is_bad: bool):
             logger.info("Successfully found minimal modlist.")
         case StepResult.FAILED:
             logger.error("Failed to reproduce issue with full modlist. (???)")
+    enabled, _ = get_modlist(state)
+    print(",".join(sorted(enabled)))
     state.dump(state_path)
 
 

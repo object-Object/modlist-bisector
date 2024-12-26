@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Literal, override
+from typing import Any, Iterable, Literal, override
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pydantic.alias_generators import to_camel
@@ -298,5 +298,14 @@ class FabricMod(Mod[FabricModFile], modloader="fabric", meta_path="fabric.mod.js
         return self.meta.name
 
     @override
-    def dependencies(self):
+    def dependencies(self) -> Iterable[str]:
         return self.meta.depends.keys()
+
+    @override
+    def provides(self) -> Iterable[str]:
+        return []
+
+    @override
+    def jars(self) -> Iterable[Path]:
+        for jar in self.meta.jars:
+            yield jar.file
