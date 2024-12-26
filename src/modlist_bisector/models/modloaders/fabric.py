@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Any, Literal, override
 
@@ -283,7 +284,8 @@ class FabricMod(Mod[FabricModFile], modloader="fabric", meta_path="fabric.mod.js
     @classmethod
     @override
     def load_meta(cls, data: str):
-        return FabricModFile.model_validate_json(data)
+        json_data = json.loads(data, strict=False)
+        return FabricModFile.model_validate(json_data)
 
     @property
     @override
