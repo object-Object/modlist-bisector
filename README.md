@@ -24,7 +24,7 @@ rye run pre-commit install
 3. Disable or remove DependencyGrapher. It excludes itself from the dependency graph it generates, so you may encounter errors if any of its dependencies are disabled.
 4. Run `rye run bisect start path/to/dependencygrapher.json`.
    * If there are specific mods you want to keep enabled at all times, you can use the `-r` flag for each modid. For example: `rye run bisect start path/to/dependencygrapher.json -r hexcasting -r create`
-5. Start the game and attempt to reproduce the issue.
+5. Start the game and attempt to reproduce the issue, then close the game.
 6. Run `rye run bisect good` or `rye run bisect bad`, depending if the issue occurred or not.
 7. Repeat steps 5-6 until the bisector finds a minimal modlist to reproduce the issue.
 8. To clean up, run `rye run bisect reset` to reenable all mods.
