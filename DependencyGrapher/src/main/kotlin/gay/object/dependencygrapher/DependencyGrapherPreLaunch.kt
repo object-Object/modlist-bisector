@@ -21,13 +21,17 @@ object DependencyGrapherPreLaunch : PreLaunchEntrypoint {
 
 	@OptIn(ExperimentalSerializationApi::class)
 	override fun onPreLaunch() {
-		logger.info("Building dependency graph")
-
 		val graph = DependencyGraph.empty()
+
+		logInfo("Finding canonical mods.")
 
 		val canonicalMods = mutableMapOf<String, ModContainer>()
 		for (mod in FabricLoader.getInstance().allMods) {
-			if (mod.metadata.type == "builtin" || mod.metadata.id == "dependencygrapher") continue
+			if (mod.metadata.type == "builtin" || mod.metadata.id == "dependencygrapher") {
+				logInfo("Skipping mod: ${mod.metadata.id}")
+				continue
+			}
+			logInfo("Discovering mod: ${mod.metadata.id}")
 
 			var canonicalMod = mod
 			while (canonicalMod.containingMod.isPresent) {
@@ -45,6 +49,8 @@ object DependencyGrapherPreLaunch : PreLaunchEntrypoint {
 			}
 		}
 
+		logInfo("Adding dependencies.")
+
 		for (mod in FabricLoader.getInstance().allMods) {
 			val canonicalMod = canonicalMods[mod.metadata.id] ?: continue
 
@@ -57,7 +63,11 @@ object DependencyGrapherPreLaunch : PreLaunchEntrypoint {
 		}
 
 		val outputPath = FabricLoader.getInstance().gameDir / "dependencygrapher.json"
-		logger.info("Writing dependency graph to $outputPath")
+		logInfo("Writing dependency graph to file: $outputPath")
 		jsonSerializer.encodeToStream(graph, outputPath.outputStream())
+	}
+
+	private fun logInfo(message: String) {
+		logger.info("[DependencyGrapher] $message")
 	}
 }
