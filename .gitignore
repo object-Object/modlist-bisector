@@ -2,6 +2,7 @@ config.toml
 graph.json
 state.json
 log_*.json
+dependencygrapher.json
 .ruff_cache/
 /run/
 

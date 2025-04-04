@@ -1,0 +1,32 @@
+{
+	"schemaVersion": 1,
+	"id": "dependencygrapher",
+	"version": "${version}",
+	"name": "DependencyGrapher",
+	"description": "Generates a json dependency graph of all loaded mods.",
+	"authors": [
+		"object-Object"
+	],
+	"contact": {
+		"homepage": "https://github.com/object-Object/modlist-bisector",
+		"sources": "https://github.com/object-Object/modlist-bisector"
+	},
+	"license": "MIT",
+	"icon": "assets/dependencygrapher/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"preLaunch": [
+			{
+				"value": "gay.object.dependencygrapher.DependencyGrapherPreLaunch",
+				"adapter": "kotlin"
+			}
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.16.9",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
+		"fabric-api": "*",
+		"fabric-language-kotlin": "*"
+	}
+}

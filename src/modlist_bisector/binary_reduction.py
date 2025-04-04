@@ -2,17 +2,14 @@
 # pyright: reportUnknownMemberType=information
 # pyright: reportUnknownVariableType=information
 
-import fnmatch
 import logging
 from enum import Enum, auto
-from typing import Any, Iterator
+from typing import Iterator
 
 import networkx as nx
 
-from modlist_bisector.models.config import Config
-from modlist_bisector.models.modloaders.base import Mod
+from modlist_bisector.models.dependency_graph import DependencyGraph
 from modlist_bisector.models.state import State
-from modlist_bisector.utils.mods import load_mod
 
 logger = logging.getLogger(__name__)
 
@@ -34,46 +31,18 @@ class StepResult(Enum):
     FAILED = auto()
 
 
-def setup_binary_reduction(config: Config) -> State:
+def setup_binary_reduction(graph: DependencyGraph, required_mods: set[str]) -> State:
     G = nx.DiGraph()
-
-    for mods_dir in config.mods_dirs:
-        logger.debug(f"Loading {mods_dir=}")
-        for mod_path in mods_dir.rglob("*.jar"):
-            logger.debug(f"Loading {mod_path=}")
-            for ignore_path in config.ignored_paths:
-                if fnmatch.fnmatch(mod_path.as_posix(), ignore_path):
-                    logger.debug(
-                        f"Path {mod_path} matches pattern {ignore_path}, skipping."
-                    )
-                    continue
-
-            try:
-                mod = load_mod(config, mod_path)
-            except Exception:
-                logger.error(f"Failed to load mod: {mod_path}")
-                raise
-
-            G.add_node(mod.id, path=mod_path, mod=mod)
-            for provides in mod.provides():
-                G.add_node(provides, path=mod_path, mod=mod)
-
-    for modid, data in G.nodes(data=True):
-        mod: Mod[Any] = data["mod"]
-        for dependency in mod.dependencies():
-            if dependency in IGNORED_DEPENDENCIES:
-                continue
-            if dependency in G:
-                G.add_edge(modid, dependency)
-            else:
-                logger.warning(f"Missing dependency for {modid}: {dependency}")
+    for modid, dependencies in graph.dependencies.items():
+        for dependency in dependencies:
+            G.add_edge(modid, dependency)
 
     S = set[frozenset[str]]()
     D = set[frozenset[str]]()
 
     for modid in G:
         closure = frozenset(get_closure(G, modid, set()))
-        if modid in config.required_mods:
+        if modid in required_mods:
             S.add(closure)
         else:
             D.add(closure)
@@ -85,7 +54,7 @@ def setup_binary_reduction(config: Config) -> State:
             pass
 
     state = State(
-        mod_jars={modid: data["path"] for modid, data in G.nodes(data=True)},
+        jars=graph.jars,
         S=list(S),
         D=list(D),
         L=0,
@@ -114,22 +83,36 @@ def get_and_apply_modlist(state: State) -> tuple[set[str], set[str]]:
 def get_modlist(state: State) -> tuple[set[str], set[str]]:
     """Returns enabled, disabled."""
     enabled = flatten_closures(state.S + state.D[: state.m + 1])
-    disabled = state.mod_jars.keys() - enabled
+    disabled = state.jars.keys() - enabled
     return enabled, disabled
 
 
 def apply_modlist(state: State, enabled: set[str], disabled: set[str]):
+    newly_enabled = set[str]()
+    newly_disabled = set[str]()
+
     for modid in enabled:
-        enabled_path = state.mod_jars[modid]
-        disabled_path = enabled_path.with_suffix(".jar.disabled")
-        if disabled_path.exists():
-            disabled_path.rename(enabled_path)
+        for enabled_path in state.jars[modid]:
+            disabled_path = enabled_path.with_suffix(".jar.disabled")
+            if disabled_path.exists():
+                disabled_path.rename(enabled_path)
+                newly_enabled.add(modid)
 
     for modid in disabled:
-        enabled_path = state.mod_jars[modid]
-        disabled_path = enabled_path.with_suffix(".jar.disabled")
-        if enabled_path.exists():
-            enabled_path.rename(disabled_path)
+        for enabled_path in state.jars[modid]:
+            disabled_path = enabled_path.with_suffix(".jar.disabled")
+            if enabled_path.exists():
+                enabled_path.rename(disabled_path)
+                newly_disabled.add(modid)
+
+    n = len(enabled) + len(disabled)
+    logger.info(
+        f"Enabled: {len(enabled) - len(newly_enabled) + len(newly_disabled)}/{n} -> {len(enabled)}/{n}\n"
+        + "\n".join(
+            [f"+ {modid}" for modid in sorted(newly_enabled)]
+            + [f"- {modid}" for modid in sorted(newly_disabled)]
+        )
+    )
 
 
 def step_binary_reduction(state: State, is_bad: bool) -> StepResult:

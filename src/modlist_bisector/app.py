@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 from typing import Annotated
 
-from typer import Option, Typer
+from typer import Argument, Option, Typer
 
 from modlist_bisector.binary_reduction import (
     StepResult,
@@ -12,34 +12,14 @@ from modlist_bisector.binary_reduction import (
     setup_binary_reduction,
     step_binary_reduction,
 )
-from modlist_bisector.models.config import Config
+from modlist_bisector.models.dependency_graph import DependencyGraph
 from modlist_bisector.models.state import State
 from modlist_bisector.utils.logging import setup_logging
 
 logger = logging.getLogger(__name__)
 
 
-DEFAULT_CONFIG_FILE = "config.toml"
 DEFAULT_STATE_FILE = "state.json"
-
-
-def _parse_config_path(value: str) -> Path:
-    path = Path(value)
-    if path.is_dir():
-        path /= DEFAULT_CONFIG_FILE
-    return path
-
-
-ConfigPathOption = Annotated[
-    Path,
-    Option(
-        "--config",
-        "-c",
-        show_default=DEFAULT_CONFIG_FILE,
-        default_factory=lambda: DEFAULT_CONFIG_FILE,
-        parser=_parse_config_path,
-    ),
-]
 
 
 def _parse_state_path(value: str) -> Path:
@@ -70,13 +50,18 @@ app = Typer(
 
 @app.command()
 def start(
-    config_path: ConfigPathOption,
+    *,
+    dependency_graph_path: Annotated[Path, Argument()] = Path("dependencygrapher.json"),
     state_path: StatePathOption,
+    required_mods: Annotated[
+        list[str],
+        Option("-r", "--require-mod", default_factory=list),
+    ],
     verbosity: VerbosityOption = 0,
 ):
     setup_logging(verbosity)
-    config = Config.load(config_path)
-    state = setup_binary_reduction(config)
+    graph = DependencyGraph.load(dependency_graph_path)
+    state = setup_binary_reduction(graph, set(required_mods))
     get_and_apply_modlist(state)
     state.dump(state_path)
 
@@ -106,8 +91,22 @@ def reset(
 ):
     setup_logging(verbosity)
     state = State.load(state_path)
-    apply_modlist(state, enabled=set(state.mod_jars.keys()), disabled=set())
+    apply_modlist(state, enabled=set(state.jars.keys()), disabled=set())
     state_path.unlink()
+    logger.info("Reenabled all mods.")
+
+
+@app.command()
+def status(
+    state_path: StatePathOption,
+    verbosity: VerbosityOption = 0,
+):
+    setup_logging(verbosity)
+    state = State.load(state_path)
+    enabled, disabled = get_modlist(state)
+    n = len(enabled) + len(disabled)
+    logger.info("\n  ".join([f"Enabled: {len(enabled)}/{n}"] + sorted(enabled)))
+    logger.info("\n  ".join([f"Disabled: {len(disabled)}/{n}"] + sorted(disabled)))
 
 
 def step(state_path: Path, is_bad: bool):
@@ -116,11 +115,12 @@ def step(state_path: Path, is_bad: bool):
         case StepResult.CONTINUE:
             get_and_apply_modlist(state)
         case StepResult.DONE:
-            logger.info("Successfully found minimal modlist.")
+            enabled, _ = get_modlist(state)
+            logger.info(
+                "\n  ".join(["Successfully found minimal modlist:"] + sorted(enabled))
+            )
         case StepResult.FAILED:
             logger.error("Failed to reproduce issue with full modlist. (???)")
-    enabled, _ = get_modlist(state)
-    print(",".join(sorted(enabled)))
     state.dump(state_path)
 
 
