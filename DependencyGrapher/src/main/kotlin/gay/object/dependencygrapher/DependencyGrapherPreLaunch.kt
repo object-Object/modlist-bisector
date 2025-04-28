@@ -34,8 +34,13 @@ object DependencyGrapherPreLaunch : PreLaunchEntrypoint {
 			logInfo("Discovering mod: ${mod.metadata.id}")
 
 			var canonicalMod = mod
-			while (canonicalMod.containingMod.isPresent) {
-				canonicalMod = canonicalMod.containingMod.get()
+			while (canonicalMod.containingMod.isPresent && canonicalMod.origin.kind != ModOrigin.Kind.PATH) {
+				val parent = canonicalMod.containingMod.get()
+				if (canonicalMod.metadata.id == parent.metadata.id) {
+					throw RuntimeException("Infinite loop detected, please update Quilt Loader to >=0.28.1 (see https://github.com/QuiltMC/quilt-loader/issues/470)")
+				}
+				canonicalMod = parent
+				logInfo("  Parent: ${canonicalMod.metadata.id}")
 			}
 
 			if (canonicalMod.origin.kind == ModOrigin.Kind.PATH) {
@@ -46,6 +51,8 @@ object DependencyGrapherPreLaunch : PreLaunchEntrypoint {
 						.map { it.toString() }
 						.toMutableSet()
 				}
+			} else {
+				logInfo("  Skipping mod: ${mod.metadata.id} (non-path parent: ${canonicalMod.metadata.id})")
 			}
 		}
 

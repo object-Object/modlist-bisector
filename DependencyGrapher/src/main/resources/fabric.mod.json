@@ -26,5 +26,8 @@
 		"fabricloader": ">=0.16.9",
 		"java": ">=17",
 		"fabric-language-kotlin": "*"
+	},
+	"breaks": {
+		"quilt_loader": "<0.28.1"
 	}
 }
