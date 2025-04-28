@@ -66,6 +66,7 @@ object DependencyGrapherPreLaunch : PreLaunchEntrypoint {
 				mod.metadata.dependencies
 					.filter { it.kind == ModDependency.Kind.DEPENDS }
 					.mapNotNull { canonicalMods[it.modId]?.metadata?.id }
+					.filter { it != mod.metadata.id }
 			)
 		}
 
