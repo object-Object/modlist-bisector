@@ -18,17 +18,14 @@ dependencies = [
     "networkx>=3.3",
 ]
 
-# Rye
-
-[tool.rye]
-managed = true
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "ruff>=0.5.0",
     "pre-commit",
 ]
 
-[tool.rye.scripts]
-bisect = { call="modlist_bisector.app" }
+[project.scripts]
+bisect = "modlist_bisector.app:app"
 
 # build config
 
@@ -80,7 +77,7 @@ exclude = [
     "**/__pycache__",
 ]
 
-typeCheckingMode = "basic"
+typeCheckingMode = "standard"
 
 enableExperimentalFeatures = true
 strictDictionaryInference = true

@@ -8,9 +8,7 @@
         "editor.rulers": [88],
     },
     "ruff.organizeImports": true,
-    "ruff.lint.args": [
-        "--extend-ignore=I",
-    ],
+    "ruff.lint.ignore": ["I"],
     "python.languageServer": "Pylance",
     "python.analysis.diagnosticMode": "workspace",
     "python.testing.unittestEnabled": false,
