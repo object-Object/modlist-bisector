@@ -10,6 +10,9 @@ Christian Gram Kalhauge and Jens Palsberg. 2019. Binary reduction of dependency 
 
 ## Usage
 
+> [!CAUTION]
+> DependencyGrapher currently only works on Fabric and Quilt. Sinytra Connector is not supported ([#4](https://github.com/object-Object/modlist-bisector/issues/4)).
+
 1. Add the [companion mod DependencyGrapher](./DependencyGrapher) to the game instance you want to debug.
 2. Start the game with DependencyGrapher enabled. It should generate a file in the game instance's `.minecraft` folder called `dependencygrapher.json`.
 3. Disable or remove DependencyGrapher. It excludes itself from the dependency graph it generates, so you may encounter errors if any of its dependencies are disabled.
